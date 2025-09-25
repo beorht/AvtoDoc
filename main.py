@@ -1,4 +1,5 @@
-from pypandoc import convert_text
+from openpyxl import Workbook, load_workbook
+# from pypandoc import convert_text
 from google import genai
 from time import sleep
 from os import mkdir
@@ -13,13 +14,13 @@ client = genai.Client(api_key=API_KEY)
 
 # Создание файла MarkDown с лекционным материалом
 def writeMD( filename: str, text: str ):
-    
+
     filename += ".md"
     try:
         with open(filename, 'w', encoding='utf-8') as f:
             f.write( text )
         
-        print(f"Сгенерированный Markdown-отчет сохранен в файл '{filename}'")
+        print(f"::: Сгенерированный Markdown-отчет сохранен в файл '{filename}'")
     
     except IOError as e:
         print(f"Ошибка при сохранении файла: {e}")
@@ -36,17 +37,15 @@ def writeWord( filename: str, text: str ):
         extra_args=['--standalone'] # --standalone создаст полный документ Word
     )
 
-    print(f"Сгенерированный Markdown-отчет сохранен в файл '{filename}'")
+    print(f"::: Сгенерированный Word-отчет сохранен в файл '{filename}'")
 
 
 
 # Текстовый промпт для отправки в нейронку
-def sendPrompt( title: str ) -> str:
+def sendPrompt( title: str, index: int ) -> str:
     
-    prompt = f"""
+    prompt_ru = f"""
 Напиши образовательный лекционный материал по теме `{title}` в формате Markdown по следующему шаблону:
-
-```
 ### Лекция
 #### Тема лекции: [вставь тему]
 
@@ -59,17 +58,36 @@ def sendPrompt( title: str ) -> str:
 
 Текст образовательного материала:
 [сформулируй развернутый текст с пояснениями, примерами и выводами по теме]
-```
+    """
+
+    prompt_uz = f"""
+Ta’limiy lektsion materialni `{title}` mavzusi bo‘yicha quyidagi shablon asosida yozing:
+
+### Lektsiya
+#### Lektsiya mavzusi № {index}: [mavzuni qo‘ying]
+
+Ta’limiy materialning asosiy bo‘limlariga bo'lib boshida yozib ket:
+(Misol uchun:
+1. ...
+2. ...
+3. ...
+4. ...
+)
+
+Ta’limiy material matni:
+[mavzu bo‘yicha tushuntirishlar, misollar va xulosalar bilan kengaytirilgan matnni shakllantiring]
+
+
     """
 
     ### Ответ от нейронки
     return client.models.generate_content(
-        model="gemini-2.5-flash", contents=prompt
+        model="gemini-2.5-flash", contents=prompt_uz
     )
 
 
 # Функция чтения тем из текстового файла
-def readTheme( filename="data/theme.txt" ) -> list:
+def readThemeFromText( filename="data/theme.txt" ) -> list:
 
     themes = []
 
@@ -80,6 +98,30 @@ def readTheme( filename="data/theme.txt" ) -> list:
             # если он присутствует в файле.
             # Для удаления пробельных символов (включая \n) можно использовать .strip()
             themes.append(f"{line_number}. {line.strip()}")
+
+    print( "::: Темы из текстового файла прочтены!!!" )
+
+    return themes
+
+
+# Функция чтения тем из exel файла
+def readThemeFromExel( filename="data/theme.xlsx" ) -> list:
+
+    themes = []
+
+    # ✅ Открытие существующего Excel
+    wb2 = load_workbook( filename )
+    ws2 = wb2.active
+
+    # Чтение данных
+    for row in ws2.iter_rows(values_only=True):
+        
+        if row[0] == None:
+            continue
+        
+        themes.append(f"{row[0]}")
+
+    print( "::: Темы из Exel файла прочтены!!!" )
 
     return themes
 
@@ -97,16 +139,22 @@ def main():
         mkdir( subject_name )  # Создаем папку под дисциплину 
         sleep( 1 )
 
-        themes = readTheme()   # Получаем темы
+        # themes = readThemeFromText()   # Получаем список тем с txt
+        themes = readThemeFromExel()   # Получаем список тем с exel
 
-        for theme in themes:
-            response = sendPrompt( theme )
+        obshiy = ""
 
-            writeMD( f"{subject_name}/{theme}", response.text )
-            writeWord( f"{subject_name}/{theme}", response.text )
+        for i in range( len( themes ) ):
+            response = sendPrompt( themes[i], i )
+
+            writeMD( f"{subject_name}/{i}-Leksiya", response.text )
+            # writeWord( f"{subject_name}/{theme}", response.text )
+
+            obshiy += "\n" + response.text
 
             sleep( 3 )
 
+        writeMD( f"{subject_name}/Obshiy", obshiy )
 
 if __name__ == '__main__':
     main()

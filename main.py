@@ -47,42 +47,39 @@ def sendPrompt( title: str, index: int ) -> str:
     prompt_ru = f"""
 Напиши образовательный лекционный материал по теме `{title}` в формате Markdown по следующему шаблону:
 ### Лекция
-#### Тема лекции: [вставь тему]
+#### Тема № {index}: [вставь тему]
 
 Основные разделы образовательного материала:
-1. Введение
-2. Основные понятия
-3. Примеры и пояснения
-4. Практическое применение
-5. Заключение
+(Например в таком формате, от двух до пяти)
+1. ...
+2. ...
+3. ...
+4. ...
 
 Текст образовательного материала:
 [сформулируй развернутый текст с пояснениями, примерами и выводами по теме]
     """
 
     prompt_uz = f"""
-Ta’limiy lektsion materialni `{title}` mavzusi bo‘yicha quyidagi shablon asosida yozing:
+Ta’limiy lektsion materialni `{title}` mavzusi bo‘yicha quyidagi shablon asosida yozing, ajratuvchi chiziqlar siz:
 
-### Lektsiya
-#### Lektsiya mavzusi № {index}: [mavzuni qo‘ying]
+#### Mavzusi № {index}: {title}
 
 Ta’limiy materialning asosiy bo‘limlariga bo'lib boshida yozib ket:
-(Misol uchun:
+(Misol uchun manbu formata, ikta yoki beshtagacha)
 1. ...
 2. ...
 3. ...
 4. ...
-)
+
 
 Ta’limiy material matni:
 [mavzu bo‘yicha tushuntirishlar, misollar va xulosalar bilan kengaytirilgan matnni shakllantiring]
-
-
     """
 
     ### Ответ от нейронки
     return client.models.generate_content(
-        model="gemini-2.5-flash", contents=prompt_uz
+        model="gemini-2.5-flash", contents=prompt_ru
     )
 
 

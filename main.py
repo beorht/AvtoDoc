@@ -46,15 +46,15 @@ def sendPrompt( title: str, index: int ) -> str:
     
     prompt_ru = f"""
 Напиши образовательный лекционный материал по теме `{title}` в формате Markdown по следующему шаблону:
-### Лекция
-#### Тема № {index}: [вставь тему]
 
+#### Тема № {index + 1}: [вставь тему]
 Основные разделы образовательного материала:
-(Например в таком формате, от двух до пяти)
+(Например в таком формате, от двух до пяти, в самом конце образовательного материала должны быть закрепляющие тему вопросы)
+##### План:
 1. ...
 2. ...
 3. ...
-4. ...
+4. Рефлексивные вопросы 
 
 Текст образовательного материала:
 [сформулируй развернутый текст с пояснениями, примерами и выводами по теме]
@@ -63,14 +63,14 @@ def sendPrompt( title: str, index: int ) -> str:
     prompt_uz = f"""
 Ta’limiy lektsion materialni `{title}` mavzusi bo‘yicha quyidagi shablon asosida yozing, ajratuvchi chiziqlar siz:
 
-#### Mavzusi № {index}: {title}
-
-Ta’limiy materialning asosiy bo‘limlariga bo'lib boshida yozib ket:
-(Misol uchun manbu formata, ikta yoki beshtagacha)
+#### Mavzusi № {index + 1}: {title}
+Ta’limiy materialning asosiy bo‘limlari:
+(Masalan, shunday formatda: ikkitadan beshtagacha, ta’limiy material oxirida esa mavzuni mustahkamlovchi savollar bo‘lishi kerak)
+##### Reja:
 1. ...
 2. ...
 3. ...
-4. ...
+4. Refleksiv savollar
 
 
 Ta’limiy material matni:
